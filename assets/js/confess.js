@@ -7,10 +7,20 @@ async function sendConfession() {
   document.getElementById("result").classList.remove("hidden");
   document.getElementById("ai-response").innerText = "Thinking...";
 
+  const headers = {
+    "Content-Type": "application/json"
+  };
+
+  // ✅ Only include your admin token if it's stored in localStorage
+  const adminToken = localStorage.getItem("adminToken");
+  if (adminToken) {
+    headers["X-Admin-Token"] = adminToken;
+  }
+
   try {
     const res = await fetch("/.netlify/functions/ask-openai", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({ prompt: userText })
     });
 
