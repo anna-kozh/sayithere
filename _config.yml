@@ -1,0 +1,6 @@
+title: Say It Here
+description: Confession and response site
+baseurl: ""
+url: ""
+markdown: kramdown
+theme: minima
