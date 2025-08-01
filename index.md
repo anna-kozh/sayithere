@@ -5,7 +5,7 @@ title: Say it here
 
 <h1 class="text-3xl font-bold text-pink-600 mb-4">Say it here</h1>
 
-<p class="mb-4 font-medium">Whatever it is, if it's still sitting in your body — say it here.</p>
+<p class="mb-4 font-medium">Do you have something on your mind? Say it here...</p>
 
 <textarea id="confession" rows="6" class="w-full border rounded p-2 mb-4" placeholder="What's on your mind?"></textarea>
 
