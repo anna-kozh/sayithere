@@ -92,7 +92,7 @@ export async function handler(event) {
   // 🤖 Generate AI response
   try {
     const completion = await client.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4",
       messages: [
         {
           role: "system",
