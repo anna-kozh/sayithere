@@ -20,29 +20,26 @@ export async function handler(event) {
 
   const headers = event.headers;
   const ip = headers["x-forwarded-for"]?.split(",")[0] || "unknown";
-
-
-// Log request timestamp to Redis list
-const timestamp = new Date().toISOString();
-await fetch(`${UPSTASH_URL}/lpush/log:${ip}`, {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${UPSTASH_TOKEN}`,
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify([timestamp])
-});
-
-// Optional: only keep the last 10 logs per IP
-await fetch(`${UPSTASH_URL}/ltrim/log:${ip}/0/9`, {
-  method: "POST",
-  headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` }
-});
-
-
-
   const isAdmin = headers["x-admin-token"] === ADMIN_TOKEN;
 
+  // 🧾 Log request timestamp
+  const timestamp = new Date().toISOString();
+  await fetch(`${UPSTASH_URL}/lpush/log:${ip}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${UPSTASH_TOKEN}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify([timestamp])
+  });
+
+  // Keep only the 10 most recent logs
+  await fetch(`${UPSTASH_URL}/ltrim/log:${ip}/0/9`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` }
+  });
+
+  // 📋 Get and validate prompt
   let prompt;
   try {
     const body = JSON.parse(event.body || "{}");
@@ -61,37 +58,36 @@ await fetch(`${UPSTASH_URL}/ltrim/log:${ip}/0/9`, {
     };
   }
 
-  // Rate limiting for non-admins
-if (!isAdmin) {
-  // 1. Ask Upstash how many times this IP has used it today
-  const getRes = await fetch(`${UPSTASH_URL}/get/${ip}`, {
-    headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` }
-  });
+  // ⛔ Rate limiting for non-admins
+  if (!isAdmin) {
+    const getRes = await fetch(`${UPSTASH_URL}/get/${ip}`, {
+      headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` }
+    });
 
-  const count = parseInt(await getRes.text()) || 0;
+    const getData = await getRes.json();
+    const count = parseInt(getData.result) || 0;
 
-  // 2. If it’s 2 or more, block them
-  if (count >= 2) {
-    return {
-      statusCode: 429,
-      body: JSON.stringify({
-        error: "Limit reached. Try again tomorrow."
-      })
-    };
+    if (count >= 2) {
+      return {
+        statusCode: 429,
+        body: JSON.stringify({
+          error: "Limit reached. Try again tomorrow."
+        })
+      };
+    }
+
+    // Increase count
+    await fetch(`${UPSTASH_URL}/incrby/${ip}/1`, {
+      headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` }
+    });
+
+    // Reset after 24 hours
+    await fetch(`${UPSTASH_URL}/expire/${ip}/86400`, {
+      headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` }
+    });
   }
 
-  // 3. Otherwise, add 1 to their count
-  await fetch(`${UPSTASH_URL}/incrby/${ip}/1`, {
-    headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` }
-  });
-
-  // 4. Make sure the count resets every 24 hours (86400 seconds)
-  await fetch(`${UPSTASH_URL}/expire/${ip}/86400`, {
-    headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` }
-  });
-}
-
-
+  // 🤖 Generate AI response
   try {
     const completion = await client.chat.completions.create({
       model: "gpt-3.5-turbo",
