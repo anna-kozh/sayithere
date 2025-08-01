@@ -41,21 +41,35 @@ export async function handler(event) {
   }
 
   // Rate limiting for non-admins
-  if (!isAdmin) {
-    const rateRes = await fetch(`${UPSTASH_URL}/set/${ip}?EX=86400&NX=1`, {
-      headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` }
-    });
+if (!isAdmin) {
+  // 1. Ask Upstash how many times this IP has used it today
+  const getRes = await fetch(`${UPSTASH_URL}/get/${ip}`, {
+    headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` }
+  });
 
-    const rateData = await rateRes.json();
-    if (!rateData.result) {
-      return {
-        statusCode: 429,
-        body: JSON.stringify({
-          error: "Limit reached. Try again tomorrow."
-        })
-      };
-    }
+  const count = parseInt(await getRes.text()) || 0;
+
+  // 2. If it’s 2 or more, block them
+  if (count >= 2) {
+    return {
+      statusCode: 429,
+      body: JSON.stringify({
+        error: "Limit reached. Try again tomorrow."
+      })
+    };
   }
+
+  // 3. Otherwise, add 1 to their count
+  await fetch(`${UPSTASH_URL}/incrby/${ip}/1`, {
+    headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` }
+  });
+
+  // 4. Make sure the count resets every 24 hours (86400 seconds)
+  await fetch(`${UPSTASH_URL}/expire/${ip}/86400`, {
+    headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` }
+  });
+}
+
 
   try {
     const completion = await client.chat.completions.create({
