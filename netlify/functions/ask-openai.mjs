@@ -1,3 +1,5 @@
+import { SYSTEM_PROMPT } from "./tone.js";
+
 import { OpenAI } from "openai";
 import fetch from "node-fetch";
 
@@ -94,8 +96,7 @@ export async function handler(event) {
       messages: [
         {
           role: "system",
-          content:
-            "You're a kind listener. If a message is serious, respond with empathy. If it's a joke, gently nudge them to try again with something real."
+          content: SYSTEM_PROMPT
         },
         {
           role: "user",
