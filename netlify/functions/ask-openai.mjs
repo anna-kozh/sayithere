@@ -20,6 +20,27 @@ export async function handler(event) {
 
   const headers = event.headers;
   const ip = headers["x-forwarded-for"]?.split(",")[0] || "unknown";
+
+
+// Log request timestamp to Redis list
+const timestamp = new Date().toISOString();
+await fetch(`${UPSTASH_URL}/lpush/log:${ip}`, {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${UPSTASH_TOKEN}`,
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify([timestamp])
+});
+
+// Optional: only keep the last 10 logs per IP
+await fetch(`${UPSTASH_URL}/ltrim/log:${ip}/0/9`, {
+  method: "POST",
+  headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` }
+});
+
+
+
   const isAdmin = headers["x-admin-token"] === ADMIN_TOKEN;
 
   let prompt;
