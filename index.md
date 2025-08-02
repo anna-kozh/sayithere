@@ -9,8 +9,7 @@ title: Say it here
 
 <textarea id="confession" rows="6" class="w-full border rounded p-2 mb-4" placeholder="What's on your mind?"></textarea>
 
-<button id="confess-btn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Send my confession</button>
-
+<button onclick="sendConfession()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Send my confession</button>
 
 <div id="result" class="mt-6 hidden">
   <h2 class="font-bold mb-2">You said:</h2>
@@ -18,8 +17,3 @@ title: Say it here
   <h2 class="font-bold mb-2">Our reply...</h2>
   <p id="ai-response" class="whitespace-pre-wrap text-blue-700"></p>
 </div>
-
-<script type="module">
-  import { sendConfession } from "./confess.js";
-  document.getElementById("confess-btn").addEventListener("click", sendConfession);
-</script>

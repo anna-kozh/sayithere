@@ -1,17 +1,17 @@
-export async function sendConfession() {
+async function sendConfession() {
   const input = document.getElementById("confession");
   const userText = input.value.trim();
   if (!userText) return;
 
   document.getElementById("user-confession").innerText = userText;
   document.getElementById("result").classList.remove("hidden");
-  const aiOutput = document.getElementById("ai-response");
-  aiOutput.innerText = "Thinking...";
+  document.getElementById("ai-response").innerText = "Thinking...";
 
   const headers = {
     "Content-Type": "application/json"
   };
 
+  // ✅ Only include your admin token if it's stored in localStorage
   const adminToken = localStorage.getItem("adminToken");
   if (adminToken) {
     headers["X-Admin-Token"] = adminToken;
@@ -24,23 +24,12 @@ export async function sendConfession() {
       body: JSON.stringify({ prompt: userText })
     });
 
-    if (!res.body || !res.ok) {
-      const data = await res.json();
-      aiOutput.innerText = data.error || "Something went wrong.";
-      return;
-    }
-
-    aiOutput.innerText = "";
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder("utf-8");
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      aiOutput.innerText += decoder.decode(value, { stream: true });
-    }
+    const data = await res.json();
+    document.getElementById("ai-response").innerText =
+      data.response || data.error || "No response";
   } catch (err) {
     console.error(err);
-    aiOutput.innerText = "Something went wrong. Try again.";
+    document.getElementById("ai-response").innerText =
+      "Something went wrong. Try again.";
   }
 }
