@@ -1,28 +1,17 @@
-export async function handler(event) {
-  try {
-    const body = JSON.parse(event.body);
-    const confession = body.confession;
+import { set } from '@netlify/blobs';
 
-    if (!confession || !confession.text) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: "Missing confession text" })
-      };
-    }
+export default async (req, context) => {
+  const body = await req.json();
+  const confession = body.confession;
+  const timestamp = Date.now();
 
-    // You can log here to test it's working:
-    console.log("Confession received:", confession);
+  // Store it with a timestamp-based key
+  await set('confessions', `${timestamp}.json`, JSON.stringify(confession), {
+    access: 'public', // or 'private' if you don't want it exposed
+  });
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: "Confession saved" })
-    };
-  } catch (err) {
-    console.error("Function crashed:", err);
-
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Server error", details: err.message })
-    };
-  }
-}
+  return new Response(JSON.stringify({ status: 'saved' }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+};
