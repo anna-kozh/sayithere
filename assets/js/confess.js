@@ -23,7 +23,11 @@ async function sendConfession() {
       const { value, done: readerDone } = await reader.read();
       done = readerDone;
       const chunk = decoder.decode(value || new Uint8Array(), { stream: !done });
-      outputEl.innerText += chunk;
+
+      for (const char of chunk) {
+        outputEl.innerText += char;
+        await new Promise((r) => setTimeout(r, 10)); // mimic typing
+      }
     }
   } catch (err) {
     console.error("💥 Failed to reach Edge Function:", err);

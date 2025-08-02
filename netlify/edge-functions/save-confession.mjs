@@ -1,28 +1,29 @@
-export async function handler(event) {
-  try {
-    const body = JSON.parse(event.body);
-    const confession = body.confession;
+// netlify/edge-functions/save-confession.mjs
 
-    if (!confession || !confession.text) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: "Missing confession text" })
-      };
-    }
-
-    // You can log here to test it's working:
-    console.log("Confession received:", confession);
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: "Confession saved" })
-    };
-  } catch (err) {
-    console.error("Function crashed:", err);
-
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Server error", details: err.message })
-    };
+export default async (request, context) => {
+  if (request.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method Not Allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json" }
+    });
   }
-}
+
+  try {
+    const { confession } = await request.json();
+
+    // For now, just log the confession or simulate saving
+    console.log("📝 Received confession:", confession);
+
+    return new Response(JSON.stringify({ status: "ok" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (err) {
+    console.error("❌ Error saving confession:", err);
+
+    return new Response(JSON.stringify({ error: "Failed to save confession" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+};
