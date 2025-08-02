@@ -1,9 +1,10 @@
 [build]
-  functions = "netlify/functions"
+  command = "jekyll build"
+  publish = "_site"
 
 [edge_functions]
   included_files = ["netlify/edge-functions/**"]
 
 [[edge_functions]]
-  path = "/ask-openai"
   function = "ask-openai"
+  path = "/ask-openai"
