@@ -1,5 +1,5 @@
 // netlify/edge-functions/ask-openai.js
-
+import { SYSTEM_PROMPT } from "../utils/tone.js";
 import { OpenAI } from "openai";
 
 console.log("🟢 Edge function 'ask-openai' is loaded.");
@@ -32,7 +32,7 @@ export default async (request, context) => {
     messages: [
       {
         role: "system",
-        content: "You're a thoughtful, empathetic confidant. Respond gently and insightfully."
+        content: SYSTEM_PROMPT
       },
       {
         role: "user",
