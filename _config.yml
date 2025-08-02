@@ -12,3 +12,6 @@ theme: minima
 markdown: kramdown
 plugins:
   - jekyll-feed
+
+include:
+  - assets/js/confess.js

@@ -44,3 +44,8 @@ export async function sendConfession() {
     aiOutput.innerText = "Something went wrong. Try again.";
   }
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("confess-btn");
+  if (btn) btn.addEventListener("click", sendConfession);
+});
