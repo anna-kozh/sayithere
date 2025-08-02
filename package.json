@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@netlify/blobs": "^10.0.8",
     "node-fetch": "^3.3.2",
     "openai": "^5.11.0"
   },
