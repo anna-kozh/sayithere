@@ -17,3 +17,5 @@ title: Say it here
   <h2 class="font-bold mb-2">Our reply...</h2>
   <p id="ai-response" class="whitespace-pre-wrap text-blue-700"></p>
 </div>
+
+<script src="/assets/js/confess.js"></script>

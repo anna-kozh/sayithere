@@ -1,2 +1,9 @@
 [build]
   functions = "netlify/functions"
+
+  [edge_functions]
+  included_files = ["netlify/edge-functions/**"]
+
+[[edge_functions]]
+  path = "/ask-openai"
+  function = "ask-openai"
